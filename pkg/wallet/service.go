@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"errors"
+
 	"github.com/Tursunkhuja/wallet/pkg/types"
 	//"github.com/Tursunkhuja/wallet/pkg/wallet"
 )
@@ -11,11 +13,7 @@ type Service struct {
 	//payments      []*types.Payment
 }
 
-type ErrAccountNotFound string
-
-func (e ErrAccountNotFound) Error() string {
-	return string(e)
-}
+var ErrAccountNotFound = errors.New("account not found")
 
 func (service *Service) FindAccountByID(accountID int64) (*types.Account, error) {
 	for _, account := range service.accounts {
@@ -23,7 +21,7 @@ func (service *Service) FindAccountByID(accountID int64) (*types.Account, error)
 			return account, nil
 		}
 	}
-	return nil, ErrAccountNotFound("account not found!")
+	return nil, ErrAccountNotFound
 }
 
 type Error string

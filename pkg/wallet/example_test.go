@@ -32,9 +32,9 @@ func Test_FindAccountById_NotExist(t *testing.T) {
 	acc2 := types.Account{ID: 2, Phone: "992928303783", Balance: 200}
 	svc.accounts = append(svc.accounts, &acc2)
 
-	account, error := svc.FindAccountByID(1)
+	account, error1 := svc.FindAccountByID(1)
 
-	if !reflect.DeepEqual(ErrAccountNotFound("account not found!"), error) {
+	if reflect.DeepEqual(ErrAccountNotFound.Error(), error1) {
 		t.Errorf("There should not be any error!")
 	}
 	if reflect.DeepEqual(nil, account) {
