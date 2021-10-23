@@ -18,7 +18,7 @@ func (e ErrAccountNotFound) Error() string {
 	return string(e)
 }
 
-func (service *Service) FindAccountById(accountID string) (*types.Account, error) {
+func (service *Service) FindAccountByID(accountID string) (*types.Account, error) {
 	for _, account := range service.accounts {
 		if account.ID == accountID {
 			return account, nil
