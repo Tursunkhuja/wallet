@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Tursunkhuja/wallet/pkg/types"
+	"github.com/google/uuid"
 )
 
 //"github.com/Tursunkhuja/wallet/pkg/wallet"
@@ -39,5 +40,49 @@ func Test_FindAccountById_NotExist(t *testing.T) {
 	}
 	if reflect.DeepEqual(nil, account) {
 		t.Errorf("There should not be an account with ID = 1")
+	}
+}
+
+func Test_Reject_PaymentExist(t *testing.T) {
+
+	paymentID := uuid.New().String()
+	svc := Service{}
+	account := types.Account{ID: 1, Phone: "992928303783", Balance: 200}
+	payment := types.Payment{
+		ID:        paymentID,
+		AccountID: 1,
+		Amount:    200,
+		Status:    types.PaymentStatusOK,
+	}
+
+	svc.accounts = append(svc.accounts, &account)
+	svc.payments = append(svc.payments, &payment)
+
+	error := svc.Reject(paymentID)
+
+	if !reflect.DeepEqual(nil, error) {
+		t.Errorf("There should not be an error, because payment id exists")
+	}
+}
+
+func Test_Reject_PaymentNotExist(t *testing.T) {
+
+	paymentID := uuid.New().String()
+	svc := Service{}
+	account := types.Account{ID: 1, Phone: "992928303783", Balance: 200}
+	payment := types.Payment{
+		ID:        paymentID,
+		AccountID: 1,
+		Amount:    200,
+		Status:    types.PaymentStatusOK,
+	}
+
+	svc.accounts = append(svc.accounts, &account)
+	svc.payments = append(svc.payments, &payment)
+
+	error := svc.Reject("wronPaymentID")
+
+	if reflect.DeepEqual(ErrPaymentNotFound.Error(), error) {
+		t.Errorf("payment id not found")
 	}
 }
