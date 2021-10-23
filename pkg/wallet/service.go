@@ -2,12 +2,11 @@ package wallet
 
 import (
 	"github.com/Tursunkhuja/wallet/pkg/types"
-	"github.com/google/uuid"
 	//"github.com/Tursunkhuja/wallet/pkg/wallet"
 )
 
 type Service struct {
-	nextAccountID string
+	nextAccountID int64
 	accounts      []*types.Account
 	//payments      []*types.Payment
 }
@@ -18,7 +17,7 @@ func (e ErrAccountNotFound) Error() string {
 	return string(e)
 }
 
-func (service *Service) FindAccountByID(accountID string) (*types.Account, error) {
+func (service *Service) FindAccountByID(accountID int64) (*types.Account, error) {
 	for _, account := range service.accounts {
 		if account.ID == accountID {
 			return account, nil
@@ -34,15 +33,15 @@ func (e Error) Error() string {
 }
 func (service *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
 	for _, account := range service.accounts {
-		if account.Phone == string(phone) {
+		if account.Phone == phone {
 			return nil, Error("phone already registered")
 		}
 	}
 
-	service.nextAccountID = uuid.New().String()
+	service.nextAccountID++
 	account := &types.Account{
 		ID:      service.nextAccountID,
-		Phone:   string(phone),
+		Phone:   phone,
 		Balance: 0,
 	}
 	service.accounts = append(service.accounts, account)
