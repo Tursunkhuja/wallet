@@ -23,8 +23,7 @@ type Payment struct {
 type Phone string
 
 type Account struct {
-	ID      int64
+	ID      string
 	Phone   string
 	Balance Money
 }
-
