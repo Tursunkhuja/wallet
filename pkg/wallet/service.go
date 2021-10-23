@@ -112,24 +112,22 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	return nil, ErrPaymentNotFound
 }
 
-/*
 func (receiver *Service) Deposit(accountID int64, amount types.Money) error {
 	if amount <= 0 {
-		return Error("amount must be greater than 0")
+		return ErrAmountMustBePositive
 	}
 	var account *types.Account
 	for _, acc := range receiver.accounts {
 		if acc.ID == accountID {
-			ac++c+ount = acc
+			account = acc
 			break
 		}
 	}
 
 	if account == nil {
-		return Error("account not found")
+		return ErrAccountNotFound
 	}
 
 	account.Balance += amount
 	return nil
 }
-*/
