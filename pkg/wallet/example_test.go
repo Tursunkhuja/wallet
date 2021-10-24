@@ -5,21 +5,25 @@ import (
 	"testing"
 
 	"github.com/Tursunkhuja/wallet/pkg/types"
-	"github.com/google/uuid"
 )
 
 //"github.com/Tursunkhuja/wallet/pkg/wallet"
 
 func Test_FindAccountById_Exist(t *testing.T) {
 	//accountID := uuid.New().String()
-	svc := Service{}
-	acc1 := types.Account{ID: 1, Phone: "992928333783", Balance: 100}
-	svc.accounts = append(svc.accounts, &acc1)
+	svc := &Service{}
+	account, err := svc.RegisterAccount(types.Phone("992928333783"))
+	if err != nil {
+		t.Errorf("Error on registering account, error = %v", err)
+		return
+	}
 
-	account, error := svc.FindAccountByID(1)
+	svc.accounts = append(svc.accounts, account)
 
-	if !reflect.DeepEqual(&acc1, account) {
-		t.Errorf("There should be an account with ID = 1")
+	account2, error := svc.FindAccountByID(account.ID)
+
+	if !reflect.DeepEqual(account, account2) {
+		t.Errorf("There should be an account with this ID")
 	}
 	if !reflect.DeepEqual(nil, error) {
 		t.Errorf("There should not be any error!")
@@ -29,7 +33,7 @@ func Test_FindAccountById_Exist(t *testing.T) {
 func Test_FindAccountById_NotExist(t *testing.T) {
 
 	//accountID := uuid.New().String()
-	svc := Service{}
+	svc := &Service{}
 	acc2 := types.Account{ID: 2, Phone: "992928303783", Balance: 200}
 	svc.accounts = append(svc.accounts, &acc2)
 
@@ -43,10 +47,11 @@ func Test_FindAccountById_NotExist(t *testing.T) {
 	}
 }
 
+/*
 func Test_Reject_PaymentExist(t *testing.T) {
 
 	paymentID := uuid.New().String()
-	svc := Service{}
+	svc := &Service{}
 	account := types.Account{ID: 1, Phone: "992928303783", Balance: 200}
 	payment := types.Payment{
 		ID:        paymentID,
@@ -68,7 +73,7 @@ func Test_Reject_PaymentExist(t *testing.T) {
 func Test_Reject_PaymentNotExist(t *testing.T) {
 
 	paymentID := uuid.New().String()
-	svc := Service{}
+	svc := &Service{}
 	account := types.Account{ID: 1, Phone: "992928303783", Balance: 200}
 	payment := types.Payment{
 		ID:        paymentID,
@@ -84,5 +89,55 @@ func Test_Reject_PaymentNotExist(t *testing.T) {
 
 	if reflect.DeepEqual(ErrPaymentNotFound.Error(), error) {
 		t.Errorf("payment id not found")
+	}
+}
+*/
+
+func Test_Repeat(t *testing.T) {
+
+	//paymentID := uuid.New().String()
+
+	s := &Service{}
+
+	phone := types.Phone("992928303783")
+	account, err := s.RegisterAccount(phone)
+	if err != nil {
+		t.Errorf("Regect(): can't register account, error = %v", err)
+		return
+	}
+
+	//deposit with negative amont
+	err = s.Deposit(account.ID, -1000)
+	if err == nil {
+		t.Errorf("Regect(): can't deposit with negative amount, error = %v", err)
+		return
+	}
+	//deposit with wrong accout ID
+	err = s.Deposit(123, 1000)
+	if err == nil {
+		t.Errorf("Regect(): can't deposit with wrong account ID, error = %v", err)
+		return
+	}
+	//deposit with correct accout ID
+	err = s.Deposit(account.ID, 1000)
+	if err != nil {
+		t.Errorf("Regect(): can't deposit account, error = %v", err)
+		return
+	}
+
+	payment, err := s.Pay(account.ID, 100, "auto")
+	if err != nil {
+		t.Errorf("Regect(): can't create payment, error = %v", err)
+		return
+	}
+
+	newpayment, err := s.Repeat(payment.ID)
+	if err != nil {
+		t.Errorf("Regect(): can't copy payment, error = %v", err)
+		return
+	}
+
+	if !reflect.DeepEqual(types.Money(100), newpayment.Amount) {
+		t.Errorf("New payment amount should be 100, because it is copied payment")
 	}
 }
