@@ -141,3 +141,68 @@ func Test_Repeat(t *testing.T) {
 		t.Errorf("New payment amount should be 100, because it is copied payment")
 	}
 }
+
+func Test_FavoritePayment(t *testing.T) {
+
+	//paymentID := uuid.New().String()
+	s := &Service{}
+
+	phone := types.Phone("992928303783")
+	account, err := s.RegisterAccount(phone)
+	if err != nil {
+		t.Errorf("Regect(): can't register account, error = %v", err)
+		return
+	}
+
+	//deposit with negative amont
+	err = s.Deposit(account.ID, -1000)
+	if err == nil {
+		t.Errorf("Regect(): can't deposit with negative amount, error = %v", err)
+		return
+	}
+	//deposit with wrong accout ID
+	err = s.Deposit(123, 1000)
+	if err == nil {
+		t.Errorf("Regect(): can't deposit with wrong account ID, error = %v", err)
+		return
+	}
+	//deposit with correct accout ID
+	err = s.Deposit(account.ID, 1000)
+	if err != nil {
+		t.Errorf("Regect(): can't deposit account, error = %v", err)
+		return
+	}
+
+	payment, err := s.Pay(account.ID, 100, "auto")
+	if err != nil {
+		t.Errorf("Regect(): can't create payment, error = %v", err)
+		return
+	}
+
+	favorite, err := s.FavoritePayment(payment.ID, "New payment")
+	if err != nil {
+		t.Errorf("Regect(): can't add payment to favorite, error = %v", err)
+		return
+	}
+
+	if !reflect.DeepEqual(types.Money(100), favorite.Amount) {
+		t.Errorf("Favorite amount should be 100, because it is copied from payment")
+	}
+
+	//favorite with wrong ID
+	_, hasError := s.PayFromFavorite("1")
+	if hasError == nil {
+		t.Errorf("Regect(): can't pay with wrong favorite ID, error = %v", err)
+		return
+	}
+	//with correct favorite ID
+	payFromFavorite, err := s.PayFromFavorite(favorite.ID)
+	if err != nil {
+		t.Errorf("Regect(): can't pay from favorite, error = %v", err)
+		return
+	}
+
+	if !reflect.DeepEqual(types.Money(100), payFromFavorite.Amount) {
+		t.Errorf("Payment amount should be 100, because it is copied from favorite")
+	}
+}

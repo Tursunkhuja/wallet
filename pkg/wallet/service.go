@@ -12,12 +12,14 @@ type Service struct {
 	nextAccountID int64
 	accounts      []*types.Account
 	payments      []*types.Payment
+	favorites     []*types.Favorite
 }
 
 var ErrAccountNotFound = errors.New("account not found")
 var ErrNotEnoughBalance = errors.New("not enough balance")
 var ErrAmountMustBePositive = errors.New("amount must be greater that zero")
 var ErrPaymentNotFound = errors.New("payment not found")
+var ErrFavoriteNotFound = errors.New("favorite not found")
 var ErrPhoneAlreadyRegistered = errors.New("phone already registered")
 
 func (service *Service) FindAccountByID(accountID int64) (*types.Account, error) {
@@ -101,6 +103,15 @@ func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	return nil, ErrPaymentNotFound
 }
 
+func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite, error) {
+	for _, fav := range s.favorites {
+		if fav.ID == favoriteID {
+			return fav, nil
+		}
+	}
+	return nil, ErrFavoriteNotFound
+}
+
 func (receiver *Service) Deposit(accountID int64, amount types.Money) error {
 	if amount <= 0 {
 		return ErrAmountMustBePositive
@@ -124,4 +135,35 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 		return nil, err
 	}
 	return newpayment, nil
+}
+
+func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite, error) {
+	payment, err := s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	favorite := &types.Favorite{
+		ID:        uuid.New().String(),
+		Name:      name,
+		AccountID: payment.AccountID,
+		Amount:    payment.Amount,
+		Category:  payment.Category,
+	}
+
+	s.favorites = append(s.favorites, favorite)
+	return favorite, nil
+}
+
+func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
+	favorite, err := s.FindFavoriteByID(favoriteID)
+	if err != nil {
+		return nil, err
+	}
+
+	paymentFromFavorite, err := s.Pay(favorite.AccountID, favorite.Amount, favorite.Category)
+	if err != nil {
+		return nil, err
+	}
+	return paymentFromFavorite, nil
 }
