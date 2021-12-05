@@ -5,7 +5,6 @@ import (
 
 	"github.com/Tursunkhuja/wallet/pkg/types"
 	"github.com/google/uuid"
-	//"github.com/Tursunkhuja/wallet/pkg/wallet"
 )
 
 type Service struct {
