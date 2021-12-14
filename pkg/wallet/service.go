@@ -821,7 +821,7 @@ func (s *Service) SumPaymentsWithProgress() <-chan Progress {
 				tmpSum += v.Amount
 			}
 			mu.Lock()
-			ch <- types.Progress{part, tmpSum}
+			ch <- Progress{part, tmpSum}
 			mu.Unlock()
 		}(data[i*size:], parts, size)
 
