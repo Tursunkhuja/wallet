@@ -788,8 +788,8 @@ func (s *Service) FilterPaymentsByFnRegular(
 	return payments, nil
 }
 
-func (s *Service) SumPaymentsWithProgress() <- chan types.Progress {
-	ch := make(chan Progress)
+func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
+	ch := make(chan types.Progress)
 	size := 100_000
 	parts := int(
 		math.Ceil(
@@ -798,25 +798,25 @@ func (s *Service) SumPaymentsWithProgress() <- chan types.Progress {
 	wg := sync.WaitGroup{}
 	wg.Add(parts)
 	mu := sync.Mutex{}
-	go func (ch chan Progress, wg *sync.WaitGroup)  {
+	go func(ch chan types.Progress, wg *sync.WaitGroup) {
 		wg.Wait()
 		close(ch)
 	}(ch, &wg)
-	
+
 	data := s.payments
-	for i := 0; i < parts; i++{
+	for i := 0; i < parts; i++ {
 		go func(data []*types.Payment, part, size int) {
 			defer wg.Done()
 			tmpSum := types.Money(0)
-			for _, v := range data{
-				if size == 0{
+			for _, v := range data {
+				if size == 0 {
 					break
 				}
 				size--
 				tmpSum += v.Amount
 			}
 			mu.Lock()
-			ch <- Progress{part, tmpSum}
+			ch <- types.Progress{part, tmpSum}
 			mu.Unlock()
 		}(data[i*size:], parts, size)
 
